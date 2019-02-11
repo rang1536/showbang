@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ShowDao">
+
+<!-- 회원가입 -->
+<insert id="signUp" parameterType="kr.showBang.www.domain.SbUser" useGeneratedKeys="true" keyProperty="userNo">
+	INSERT INTO acube74.sb_user(
+		userType, 
+		userName, 
+		<if test="userShopName != null">userShopName,</if>
+		<if test="userAddress != null">userAddress,</if>
+		userHp,
+		<if test="userIntro != null">userIntro,</if>
+		userRegDate,
+		userToken,
+		pushCheck
+		<if test="userSearchAdd != null">,userSearchAdd</if>
+		<if test="myLocal != '' and myLocal != null">,myLocal</if>)
+	VALUES(#{userType}, 
+		#{userName}, 
+		<if test="userShopName != null">#{userShopName},</if>
+		<if test="userAddress != null">#{userAddress},</if>
+		#{userHp},
+		<if test="userIntro != null">#{userIntro},</if>
+		NOW(),
+		#{userToken},
+		#{pushCheck}
+		<if test="userSearchAdd != null">,#{userSearchAdd}</if>
+		<if test="myLocal != '' and myLocal != null">,#{myLocal}</if>
+		)
+</insert>
+
+<!-- 회원정보조회 -->
+<select id="getUserInfo" parameterType="int" resultType="kr.showBang.www.domain.SbUser">
+	SELECT *
+	FROM acube74.sb_user
+	WHERE userNo = #{userNo}	
+</select>
+
+<!-- 로그인 -->
+<select id="logIn" parameterType="String" resultType="kr.showBang.www.domain.SbUser">
+	SELECT *
+	FROM acube74.sb_user
+	WHERE userName = #{userName} 
+</select>
+
+<!-- 매물정보 입력 -->
+<insert id="addMemul" parameterType="kr.showBang.www.domain.SbMemul" useGeneratedKeys="true" keyProperty="mNo">
+	INSERT INTO acube74.sb_memul(
+		userNo, localNo, mCate, type, title, address, si, dong, sangse, zipcode, area, 
+		<choose>
+			<when test="type == 1">
+				tradePrice,
+			</when>
+			<when test="type == 2">
+				charterPrice,
+			</when>
+			<when test="type == 3">
+				deposit, 
+				monthlyPrice,
+			</when>
+		</choose>
+		searchKey, mainText, completeCheck, latitude, hardness, jibunAdd, roadAdd, regDate)
+	VALUES(
+		#{userNo}, #{localNo}, #{mCate}, #{type}, #{title}, #{address}, #{si}, #{dong}, #{sangse}, #{zipcode}, #{area}, 
+		<choose>
+			<when test="type == 1">
+				#{tradePrice},
+			</when>
+			<when test="type == 2">
+				#{charterPrice},
+			</when>
+			<when test="type == 3">
+				#{deposit}, 
+				#{monthlyPrice},
+			</when>
+		</choose>
+		#{searchKey}, #{mainText}, #{completeCheck}, #{latitude}, #{hardness}, #{jibunAdd}, #{roadAdd}, CURDATE())
+</insert>
+
+<!-- 매물등록 - 옵션입력 빌라 -->
+<insert id="addOption" parameterType="kr.showBang.www.domain.SbOptionCheck">
+	INSERT INTO acube74.sb_optionCheck(
+		optionNo, mNo)
+	VALUES(
+		#{optionNo}, #{mNo})
+</insert>
+
+<!-- 매물등록 - 이미지등록정보DB업로드 -->
+<insert id="addMImg" parameterType="kr.showBang.www.domain.SbImg">
+	INSERT INTO acube74.sb_img(
+		imgPath, imgFileName, mNo, userNo, originalName)
+	VALUES(
+		#{imgPath}, #{imgFileName}, #{mNo}, #{userNo}, #{originalName})
+</insert>
+
+<!-- 동조회 -->
+<select id="getDong" parameterType="int" resultType="kr.showBang.www.domain.SbDong">
+	SELECT *
+	FROM acube74.sb_dong
+	WHERE localNo = #{localNo}
+	ORDER BY dongName ASC
+</select>
+
+<!-- 동 별 안심중개사 조회 -->
+<select id="getAnsimByDong" parameterType="String" resultType="kr.showBang.www.domain.SbUser">
+	SELECT *
+	FROM acube74.sb_user
+	WHERE userType = 1
+	AND userSearchAdd LIKE CONCAT('%', #{dong},'%')
+</select>
+
+<!-- 매물조회 -->
+<select id="setMemulList" parameterType="Map" resultType="kr.showBang.www.domain.SbMemul">
+	SELECT *
+	FROM acube74.sb_memul
+	WHERE localNo = #{saveLocal}
+	AND mCate = #{saveCate}
+	AND type = #{saveType}
+	<if test="saveDong != '동없음'">AND dong LIKE CONCAT('%', #{saveDong},'%')</if>	
+</select>
+
+<!-- 매물조회(상세) -->
+<select id="getMemulDetail" parameterType="int" resultType="kr.showBang.www.domain.SbMemul">
+	SELECT *
+	FROM acube74.sb_memul
+	WHERE mNo = #{mNo}
+</select>
+
+<!-- 안심중개사 조회 -->
+<select id="getAnsimUser" parameterType="String" resultType="kr.showBang.www.domain.SbUser">
+	SELECT *
+	FROM acube74.sb_user
+	WHERE userType = 1
+	AND userSearchAdd Like CONCAT('%', #{userSearchAdd},'%')
+</select>
+
+<!-- 매물이미지 조회 -->
+<select id="setMemulImgList" parameterType="Map" resultType="kr.showBang.www.domain.SbImg">
+	SELECT *
+	FROM acube74.sb_img
+	WHERE mNo = #{mNo}	
+</select>
+
+<!-- 매물조회(복합단지) -->
+<select id="getCaMemulList" parameterType="String" resultType="kr.showBang.www.domain.SbMemul">
+	SELECT *
+	FROM acube74.sb_memul
+	WHERE searchKey Like CONCAT('%', #{caLocal}, '%')
+</select>
+
+<!-- 제휴업체조회(복합단지) -->
+<select id="getCaJehuList" parameterType="String" resultType="kr.showBang.www.domain.SbJehu">
+	SELECT *
+	FROM acube74.sb_jehu
+	WHERE jehuCate = #{caLocal}
+</select>
+
+<!-- 희망매물등록 -->
+<insert id="addWm" parameterType="kr.showBang.www.domain.SbWishMemul" useGeneratedKeys="true" keyProperty="wmNo">
+	INSERT INTO acube74.sb_wishMemul(
+		userNo
+		<if test="wmDong != null and wmDong != 0 and wmDong != ''">,wmDong</if>
+		<if test="wmTradePrice != null and wmTradePrice != 0 and wmTradePrice != ''">,wmTradePrice</if>
+		<if test="wmDeposit != null and wmDeposit != 0 and wmDeposit != ''">,wmDeposit</if>
+		<if test="wmMonthlyPrice != null and wmMonthlyPrice != 0 and wmMonthlyPrice != ''">,wmMonthlyPrice</if>
+		)
+	VALUES(
+		#{userNo}
+		<if test="wmDong != null and wmDong != 0 and wmDong != ''">,#{wmDong}</if>
+		<if test="wmTradePrice != null and wmTradePrice != 0 and wmTradePrice != ''">,#{wmTradePrice}</if>
+		<if test="wmDeposit != null and wmDeposit != 0 and wmDeposit != ''">,#{wmDeposit}</if>
+		<if test="wmMonthlyPrice != null and wmMonthlyPrice != 0 and wmMonthlyPrice != ''">,#{wmMonthlyPrice}</if>
+		)
+</insert>
+
+<!-- 희망매물옵션등록 -->
+<insert id="addWmLocal" parameterType="kr.showBang.www.domain.SbWmoLocal">
+	INSERT INTO acube74.sb_wmoLocal(
+		wmNo, wmLocal)
+	VALUES(
+		#{wmNo}, #{wmLocal})	
+</insert>
+
+<insert id="addWmCate" parameterType="kr.showBang.www.domain.SbWmoCate">
+	INSERT INTO acube74.sb_wmoCate(
+		wmNo, wmCate)
+	VALUES(
+		#{wmNo}, #{wmCate})
+</insert>
+
+<insert id="addWmType" parameterType="kr.showBang.www.domain.SbWmoType">
+	INSERT INTO acube74.sb_wmoType(
+		wmNo, wmType)
+	VALUES(
+		#{wmNo}, #{wmType})
+</insert>
+
+<!-- 복합주거 - 게시글조회 -->
+<select id="getCaBoardList" parameterType="Map" resultType="kr.showBang.www.domain.SbBoard">
+	SELECT *
+	FROM acube74.sb_board
+	WHERE boardType = #{boardType}
+	<!-- <trim prefix="WHERE" prefixOverrides="AND">
+		<if test="local neq null and !local.equals('')">
+			AND boardLocal LIKE CONCAT('%' , #{local} , '%')
+		</if>
+	</trim> -->
+	ORDER BY REGDATE DESC
+</select>
+
+<!-- 게시글입력 -->
+<insert id="addCommunity" parameterType="kr.showBang.www.domain.SbBoard">
+	INSERT INTO acube74.sb_board(
+		userNo, boardTitle, boardBody, regDate, selCnt, boardLocal)
+	VALUES(
+		#{userNo}, #{boardTitle}, #{boardBody}, NOW(), 0, #{boardLocal})
+</insert>
+
+<!-- 게시글 상세조회 -->
+<select id="boardDetail" parameterType="int" resultType="kr.showBang.www.domain.SbBoard">
+	SELECT *
+	FROM acube74.sb_board
+	WHERE boardNo = #{boardNo}
+</select>
+
+<!-- 게시글 조회수 카운트 -->
+<update id="boardSelCntPlus" parameterType="kr.showBang.www.domain.SbBoard">
+	UPDATE acube74.sb_board
+	SET selCnt = #{selCnt}
+	WHERE boardNo = #{boardNo}
+</update>
+
+<!-- 매물검색 -->
+<select id="searchMemul" parameterType="Map" resultType="kr.showBang.www.domain.SbMemul">
+	SELECT *
+	FROM acube74.sb_memul
+	WHERE searchKey LIKE #{searchValue}
+	<!-- <if test="sv1 != null and !sv1.equals('')">OR searchKey Like CONCAT('%', #{sv1} ,'%')</if>
+	<if test="sv2 != null and !sv2.equals('')">OR searchKey Like CONCAT('%', #{sv2} ,'%')</if>
+	<if test="sv3 != null and !sv3.equals('')">OR searchKey Like CONCAT('%', #{sv3} ,'%')</if> -->
+</select>
+
+<!-- 옵션검색 -->
+<select id="getOptionInfo" parameterType="int" resultType="kr.showBang.www.domain.SbOptionCheck">
+	SELECT a.*, b.optionName as optionName
+	FROM acube74.sb_optionCheck as a,
+		 acube74.sb_option as b
+	WHERE a.mNo = #{mNo}
+	AND a.optionNo = b.optionNo
+</select>
+
+
+<!-- ============================================================================================== -->
+
+
+<!-- 업종조회 -->
+<select id="setMainMenuBtn" resultType="kr.showBang.www.domain.SbComCate">
+	SELECT *
+	FROM acube74.sb_com_cate
+	ORDER BY com_cate_name
+</select>
+
+<!-- 업종 별 업체 목록조회 -->
+<select id="setCompanyList" parameterType="int" resultType="kr.showBang.www.domain.SbCompany">
+	SELECT *
+	FROM acube74.sb_company
+	WHERE com_cate_no = #{comCateNo}
+	ORDER BY com_name
+</select>
+
+<!-- 업체상세조회 -->
+<select id="getComDetail" parameterType="int" resultType="kr.showBang.www.domain.SbCompany">
+	SELECT *
+	FROM acube74.sb_company
+	WHERE com_no = #{comNo}
+</select>
+
+<!-- 업종명 조회 -->
+<select id="getComCateName" parameterType="int" resultType="String">
+	SELECT com_cate_name
+	FROM acube74.sb_com_cate
+	WHERE com_cate_no = #{comCateNo}
+</select>
+
+<!-- 업체상품조회 -->
+<select id="getComProduct" parameterType="int" resultType="kr.showBang.www.domain.SbComProduct">
+	SELECT *
+	FROM acube74.sb_com_product
+	WHERE com_no = #{comNo}
+</select>
+
+<!-- 상품조회 -->
+<select id="getProductDetail" parameterType="int" resultType="kr.showBang.www.domain.SbComProduct">
+	SELECT *
+	FROM acube74.sb_com_product
+	WHERE pro_no = #{proNo}
+</select>
+
+<!-- 상품별 등록된 이미지 조회 -->
+<select id="getProductImg" parameterType="int" resultType="kr.showBang.www.domain.SbImg">
+	SELECT *
+	FROM acube74.sb_img
+	WHERE proNo = #{proNo}
+</select>
+
+<!-- 견적문의 -->
+<insert id="addInquire" parameterType="kr.showBang.www.domain.SbInquire">
+	INSERT INTO acube74.sb_inquire(
+		inq_date, customer_no, 
+		<if test="proNo != null and proNo != 0">pro_no, </if>
+		order_hp, inq_text)
+	VALUES(
+		now(), #{customerNo},
+		<if test="proNo != null and proNo != 0">#{proNo}, </if>
+		#{orderHp}, #{inqText})
+</insert>
+
+<!-- 업체등록문의 -->
+<insert id="addAdOrder" parameterType="kr.showBang.www.domain.SbAd">
+	INSERT INTO acube74.sb_ad(
+		ad_type, callback_hp, ad_regdate
+		<if test="adType == 3 and brokerName != null">, broker_name</if>)
+	VALUES(
+		#{adType}, #{callbackHp}, now()
+		<if test="adType == 3 and brokerName != null">, #{brokerName}</if>)
+</insert>
+
+
+<!-- ============================================================================================================================================ -->
+
+<!-- 웹 - 업체등록 -->
+	<insert id="addCompany" parameterType="kr.showBang.www.domain.SbCompany" >
+		INSERT INTO acube74.sb_company(
+			com_name
+			<if test="comRrn != null and comRrn != ''">, com_rrn</if>
+			<if test="comAddress != null and comAddress != ''">, com_address</if>
+			<if test="comTel != null and comTel != ''">, com_tel</if>
+			<if test="comInfo != null and comInfo != ''">, com_info</if>
+			<if test="comCeoComment != null and comCeoComment != ''">, com_ceoComment</if>
+			<if test="comHp != null and comHp != ''">, com_hp</if>
+			<if test="comCateNo != null and comCateNo != ''">, com_cate_no</if>
+			<if test="thumnail != null and thumnail != ''">, com_thumnail</if>
+			<if test="comPlus != null and comPlus != ''">, com_plus</if>
+			<if test="comPlusLast != null and comPlusLast != ''">, com_plus_last</if>
+			<if test="comMainImg != null and comMainImg != ''">, com_main_img</if>
+			<if test="comCeoName != null and comCeoName != ''">, com_ceoname</if>
+			<if test="comAs != null and comAs != ''">, com_as</if>
+			, com_regdate
+			
+			)
+		VALUES(
+			#{comName}
+			<if test="comRrn != null and comRrn != ''">, #{comRrn}</if>
+			<if test="comAddress != null and comAddress != ''">, #{comAddress}</if>
+			<if test="comTel != null and comTel != ''">, #{comTel}</if>
+			<if test="comInfo != null and comInfo != ''">, #{comInfo}</if>
+			<if test="comCeoComment != null and comCeoComment != ''">, #{comCeoComment}</if>
+			<if test="comHp != null and comHp != ''">, #{comHp}</if>
+			<if test="comCateNo != null and comCateNo != ''">, #{comCateNo}</if>
+			<if test="thumnail != null and thumnail != ''">, #{thumnail}</if>
+			<if test="comPlus != null and comPlus != ''">, #{comPlus}</if>
+			<if test="comPlusLast != null and comPlusLast != ''">, #{comPlusLast}</if>
+			<if test="comMainImg != null and comMainImg != ''">, #{comMainImg}</if>
+			<if test="comCeoName != null and comCeoName != ''">, #{comCeoName}</if>
+			<if test="comAs != null and comAs != ''">, #{comAs}</if>
+			, now()
+			)
+	</insert>
+
+
+<!-- ============================================================================================================================================ -->
+
+<!-- 부동산 글조회 -->
+<select id="getMemulBoradList" parameterType="int" resultType="kr.showBang.www.domain.SbBoard">
+	SELECT *
+	FROM acube74.sb_board
+	WHERE boardType = 1
+	ORDER BY REGDATE DESC
+	LIMIT #{startNum}, 10	
+</select>
+
+<!-- 부동산 글 등록 -->
+<insert id="addMemulBoard" parameterType="kr.showBang.www.domain.SbBoard">
+	INSERT INTO acube74.sb_board(
+		userNo, boardTitle, boardBody, regDate, selCnt, boardLocal, boardType, secret_check)
+	VALUES(
+		#{userNo}, #{boardTitle}, #{boardBody}, NOW(), 0, #{boardLocal}, 1, 1)
+</insert>
+
+
+<!-- ============================================================================================================================================ -->
+
+<!-- 커뮤니티 글 조회(공개) --> 
+<select id="getCommunityBoradList" parameterType="int" resultType="kr.showBang.www.domain.SbBoard">
+	SELECT *
+	FROM acube74.sb_board
+	WHERE boardType = 2
+	ORDER BY REGDATE DESC
+	LIMIT #{startNum}, 10	
+</select>
+
+
+</mapper>
