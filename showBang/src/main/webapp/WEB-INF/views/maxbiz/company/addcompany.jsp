@@ -4,7 +4,9 @@
 <!DOCTYPE html>
 <c:import url="../module/top.jsp"></c:import>
 <head>
+	<!-- <script>document.domain = 'jbshow.kr'</script> -->
 	<script>
+	
 	$(document).ready(function(){
 		
 	})
@@ -185,7 +187,7 @@
 				<input type="text" name="comRrn" id="comRrn" class="form-control" placeholder="사업자번호(-빼고 숫자만 입력)">
 				<label for="comTel">업체전화번호 </label>
 				<input type="text" name="comTel" id="comTel" class="form-control" placeholder="일반전화번호">
-				<label for="comAddress">업체 소재지 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="button" href="javscript:void(0);" onclick="searchAdd()">주소찾기</a></label>
+				<label for="comAddress">업체 소재지 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="button" onclick="searchAdd()">주소찾기</a></label>
 				<input type="text" name="comAddress" id="comAddress" class="form-control" placeholder="업체주소" readonly onclick="javascript:alert('주소찾기를 이용해주세요')">
 				<input type="text" name="comAddSangse" id="comAddSangse" class="form-control" placeholder="상세주소">
 				<label for="comAs">AS정보<span class="required">*</span></label>

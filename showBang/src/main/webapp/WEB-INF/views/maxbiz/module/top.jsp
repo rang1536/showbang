@@ -54,6 +54,8 @@
 	
 	<!-- 우편번호(다음) -->
     <script src="http://dmaps.daum.net/map_js_init/postcode.v2.js"></script>
+    
+    <!-- <script>document.domain = 'jbshow.kr'</script> -->
 </head>
 
 <body>
